@@ -27,7 +27,7 @@ model = load_model()
 st.markdown("""
     <style>
         .stApp {
-            background-color: #3470ac;
+            background-color: #4a4c51;
             min-height: 100vh;
             color: white;
             padding: 40px;
