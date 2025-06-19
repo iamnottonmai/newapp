@@ -50,7 +50,6 @@ st.markdown("<h2>Upload or Take a Picture</h2>", unsafe_allow_html=True)
 uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
 # 🖼️ Example images (smaller, and below uploader)
-
 if uploaded_file is None:
     # 🔍 ตัวอย่างภาพ
     st.markdown("### 🔍 Example Images")
@@ -93,16 +92,24 @@ def predict_and_draw(image_pil):
     return result_image, result_text
 
 # 🖼️ Predict and display
-if uploaded_file is not None:
-    image_pil = Image.open(uploaded_file)
+def display_results(image_pil):
     with st.spinner("Analysing..."):
         result_image, result_text = predict_and_draw(image_pil)
     st.image(result_image, caption=result_text, use_column_width=True)
-    st.success(result_text)
+
+    if "Scoliosis detected" in result_text:
+        st.markdown(f"""
+            <div style="background-color:#cd5c5c; padding: 10px; border-radius: 5px; color: white; font-weight: bold; text-align:center;">
+                {result_text}
+            </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.success(result_text)
+
+if uploaded_file is not None:
+    image_pil = Image.open(uploaded_file)
+    display_results(image_pil)
 
 elif camera_image is not None:
     image_pil = Image.open(camera_image)
-    with st.spinner("Analysing..."):
-        result_image, result_text = predict_and_draw(image_pil)
-    st.image(result_image, caption=result_text, use_column_width=True)
-    st.success(result_text)
+    display_results(image_pil)
