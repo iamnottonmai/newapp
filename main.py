@@ -5,6 +5,7 @@ import numpy as np
 import cv2
 import os
 import gdown
+from html import escape
 
 # 🟢 ต้องอยู่บรรทัดแรก
 st.set_page_config(page_title="Scoliosis")
@@ -16,7 +17,7 @@ def load_model():
 
     # 🔽 If model doesn't exist, download from Google Drive
     if not os.path.exists(model_path):
-        file_id = "1HGdlajuTx8ly0zc-rmYMd0ni4kHIoTv-"  # ⬅️ Replace this
+        file_id = "1HGdlajuTx8ly0zc-rmYMd0ni4kHIoTv-"
         gdown.download(f"https://drive.google.com/uc?id={file_id}", model_path, quiet=False)
 
     return YOLO(model_path)
@@ -49,13 +50,10 @@ st.markdown("<h2>Upload or Take a Picture</h2>", unsafe_allow_html=True)
 # 📤 Upload image
 uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
-# 🖼️ Example images (smaller, and below uploader)
+# 🖼️ Example images
 if uploaded_file is None:
-    # 🔍 ตัวอย่างภาพ
     st.markdown("### 🔍 Example Images")
-
-    col1, col2, col3, col4, col5 = st.columns([1, 2, 1, 2, 1])  # กำหนดระยะห่าง
-
+    col1, col2, col3, col4, col5 = st.columns([1, 2, 1, 2, 1])
     with col2:
         st.image("IMG_1436_JPG_jpg.rf.b5bdcd6762cd0ce96b33f81720ca160f.jpg", width=200)
     with col4:
@@ -64,15 +62,13 @@ if uploaded_file is None:
 # 📸 Camera input
 camera_image = st.camera_input("Take a picture")
 
-# 🧠 Function to run model and return result image + label
+# 🧠 Run model
 def predict_and_draw(image_pil):
     image = np.array(image_pil)
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
     results = model(image)
     result = results[0]
     boxes = result.boxes if result.boxes is not None else []
-
     detected_scoliosis = False
 
     for box in boxes:
@@ -91,26 +87,27 @@ def predict_and_draw(image_pil):
     result_text = "Scoliosis detected. Further evaluation and treatment may be needed." if detected_scoliosis else "No abnormalities detected"
     return result_image, result_text
 
-# 🖼️ Predict and display
+# 📊 Display result
 def display_results(image_pil):
     with st.spinner("Analysing..."):
         result_image, result_text = predict_and_draw(image_pil)
-    st.image(result_image, caption=result_text, use_container_width=True)
+
+    st.image(result_image, use_container_width=True)
 
     if "Scoliosis detected" in result_text:
+        escaped_text = escape(result_text)
         st.markdown(f"""
             <div style="background-color:#cd5c5c; padding: 10px; border-radius: 5px; color: white; font-weight: bold; text-align:center;">
-                {result_text}
+                {escaped_text}
             </div>
-    """,    unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
     else:
         st.success(result_text)
 
-
+# 🚀 Trigger
 if uploaded_file is not None:
     image_pil = Image.open(uploaded_file)
     display_results(image_pil)
-
 elif camera_image is not None:
     image_pil = Image.open(camera_image)
     display_results(image_pil)
