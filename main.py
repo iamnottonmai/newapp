@@ -50,15 +50,17 @@ st.markdown("<h2>Upload or Take a Picture</h2>", unsafe_allow_html=True)
 uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
 # 🖼️ Example images (smaller, and below uploader)
+
 if uploaded_file is None:
-    st.markdown("#### 🔍 ตัวอย่างภาพ")
-    col1, col2 = st.columns([1, 1])
+    # 🔍 ตัวอย่างภาพ
+st.markdown("### 🔍 Example Images")
 
-    with col1:
-        st.image("IMG_1435_JPG_jpg.rf.7bf2e18e950b4245a10bda6dcc05036f.jpg", caption="ภาพตัวอย่างที่ 1", width=200)
+col1, col2, col3, col4, col5 = st.columns([1, 2, 1, 2, 1])  # กำหนดระยะห่าง
 
-    with col2:
-        st.image("IMG_1436_JPG_jpg.rf.b5bdcd6762cd0ce96b33f81720ca160f.jpg", caption="ภาพตัวอย่างที่ 2", width=200)
+with col2:
+    st.image("IMG_1436_JPG_jpg.rf.b5bdcd6762cd0ce96b33f81720ca160f.jpg", width=200)
+with col4:
+    st.image("IMG_1435_JPG_jpg.rf.7bf2e18e950b4245a10bda6dcc05036f.jpg", width=200)
 
 # 📸 Camera input
 camera_image = st.camera_input("Take a picture")
