@@ -7,7 +7,7 @@ import os
 import gdown
 
 # 🟢 ต้องอยู่บรรทัดแรก
-st.set_page_config(page_title="Page 1 - Upload or Camera")
+st.set_page_config(page_title="Scoliosis")
 
 # โหลดโมเดล (โหลดแค่ครั้งเดียว)
 @st.cache_resource
@@ -43,7 +43,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ✅ Heading
-st.markdown("<h1>Upload or Take a Picture</h1>", unsafe_allow_html=True)
+st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
+st.markdown("<h2>Upload or Take a Picture</h2>", unsafe_allow_html=True)
 
 # 📤 Upload image
 uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
