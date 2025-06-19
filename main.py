@@ -1,4 +1,27 @@
 import streamlit as st
+from PIL import Image
+from ultralytics import YOLO
+import numpy as np
+import cv2
+import os
+import gdown
+
+# 🟢 ต้องอยู่บรรทัดแรก
+st.set_page_config(page_title="Page 1 - Upload or Camera")
+
+# โหลดโมเดล (โหลดแค่ครั้งเดียว)
+@st.cache_resource
+def load_model():
+    model_path = os.path.join(os.path.dirname(__file__), '..', 'best.pt')
+
+    # 🔽 If model doesn't exist, download from Google Drive
+    if not os.path.exists(model_path):
+        file_id = "1HGdlajuTx8ly0zc-rmYMd0ni4kHIoTv-"  # ⬅️ Replace this
+        gdown.download(f"https://drive.google.com/uc?id={file_id}", model_path, quiet=False)
+
+    return YOLO(model_path)
+
+model = load_model()
 
 # ✅ CSS Styling
 st.markdown("""
@@ -6,46 +29,66 @@ st.markdown("""
         .stApp {
             background-color: #3470ac;
             min-height: 100vh;
-            padding-top: 60px;
+            color: white;
+            padding: 40px;
         }
-
-        .scoliosis-text {
+        h1 {
+            color: white;
             font-weight: bold;
-            color: black;
-            font-size: 60px;
+            font-size: 48px;
             text-align: center;
-            margin-top: 150px;
             margin-bottom: 40px;
-        }
-
-        .click-here-button {
-            display: flex;
-            justify-content: flex-end;
-            margin-right: 180px; /* 🔵 เยื้องขวาเยอะขึ้น */
-            margin-top: 20px;
-        }
-
-        .click-here-button > button {
-            font-size: 36px;
-            font-weight: bold;
-            padding: 20px 60px;
-            background-color: white;
-            color: black;
-            border: 5px solid yellow;
-            border-radius: 12px;
-            box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# ✅ ข้อความ SCOLIOSIS ตรงกลาง
-st.markdown('<div class="scoliosis-text">SCOLIOSIS</div>', unsafe_allow_html=True)
+# ✅ Heading
+st.markdown("<h1>Upload or Take a Picture</h1>", unsafe_allow_html=True)
 
-# ✅ ปุ่ม CLICK HERE เยื้องขวา
-with st.container():
-    st.markdown('<div class="click-here-button">', unsafe_allow_html=True)
-    if st.button("CLICK HERE"):
-        st.switch_page("page1")
+# 📤 Upload image
+uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
-    st.markdown('</div>', unsafe_allow_html=True)
+# 📸 Camera input
+camera_image = st.camera_input("Take a picture")
+
+# 🧠 Function to run model and return result image + label
+def predict_and_draw(image_pil):
+    image = np.array(image_pil)
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
+    results = model(image)
+    result = results[0]
+    boxes = result.boxes if result.boxes is not None else []
+
+    detected_scoliosis = False
+
+    for box in boxes:
+        cls_id = int(box.cls[0])
+        label = model.names[cls_id]
+        conf = float(box.conf[0])
+        x1, y1, x2, y2 = map(int, box.xyxy[0])
+
+        if label == "scoliosis":
+            detected_scoliosis = True
+            cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(image, f"{label} {conf:.2f}", (x1, y1 - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
+    result_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    result_text = "ตรวจพบ Scoliosis!" if detected_scoliosis else "ไม่พบความผิดปกติ"
+    return result_image, result_text
+
+# 🖼️ Predict and display
+if uploaded_file is not None:
+    image_pil = Image.open(uploaded_file)
+    with st.spinner("กำลังวิเคราะห์..."):
+        result_image, result_text = predict_and_draw(image_pil)
+    st.image(result_image, caption=result_text, use_column_width=True)
+    st.success(result_text)
+
+elif camera_image is not None:
+    image_pil = Image.open(camera_image)
+    with st.spinner("กำลังวิเคราะห์..."):
+        result_image, result_text = predict_and_draw(image_pil)
+    st.image(result_image, caption=result_text, use_column_width=True)
+    st.success(result_text)
