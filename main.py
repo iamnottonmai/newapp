@@ -95,7 +95,7 @@ def predict_and_draw(image_pil):
 def display_results(image_pil):
     with st.spinner("Analysing..."):
         result_image, result_text = predict_and_draw(image_pil)
-    st.image(result_image, caption=result_text, use_column_width=True)
+    st.image(result_image, caption=result_text, use_container_width=True)
 
     if "Scoliosis detected" in result_text:
         st.markdown(f"""
