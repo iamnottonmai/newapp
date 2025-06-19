@@ -102,9 +102,10 @@ def display_results(image_pil):
             <div style="background-color:#cd5c5c; padding: 10px; border-radius: 5px; color: white; font-weight: bold; text-align:center;">
                 {result_text}
             </div>
-        """, unsafe_allow_html=True)
+    """,    unsafe_allow_html=True)
     else:
         st.success(result_text)
+
 
 if uploaded_file is not None:
     image_pil = Image.open(uploaded_file)
