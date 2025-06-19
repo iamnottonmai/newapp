@@ -55,10 +55,10 @@ if uploaded_file is None:
     col1, col2 = st.columns([1, 1])
 
     with col1:
-        st.image("example1.jpg", caption="ภาพตัวอย่างที่ 1", width=200)
+        st.image("IMG_1435_JPG_jpg.rf.7bf2e18e950b4245a10bda6dcc05036f.jpg", caption="ภาพตัวอย่างที่ 1", width=200)
 
     with col2:
-        st.image("example2.jpg", caption="ภาพตัวอย่างที่ 2", width=200)
+        st.image("IMG_1436_JPG_jpg.rf.b5bdcd6762cd0ce96b33f81720ca160f.jpg", caption="ภาพตัวอย่างที่ 2", width=200)
 
 # 📸 Camera input
 camera_image = st.camera_input("Take a picture")
