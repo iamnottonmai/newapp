@@ -6,24 +6,24 @@ import cv2
 import os
 import gdown
 
-# 🟢 Page config
-st.set_page_config(page_title="Scoliosis Detection", layout="centered")
+# 🟢 ต้องอยู่บรรทัดแรก
+st.set_page_config(page_title="Page 1 - Upload or Camera")
 
-# 📥 Load model
+# โหลดโมเดล (โหลดแค่ครั้งเดียว)
 @st.cache_resource
 def load_model():
-    model_path = os.path.join(os.path.dirname(__file__), 'best.pt')
+    model_path = os.path.join(os.path.dirname(__file__), '..', 'best.pt')
 
-    # 🔽 Download if missing
+    # 🔽 If model doesn't exist, download from Google Drive
     if not os.path.exists(model_path):
-        file_id = "1HGdlajuTx8ly0zc-rmYMd0ni4kHIoTv-"
+        file_id = "1HGdlajuTx8ly0zc-rmYMd0ni4kHIoTv-"  # ⬅️ Replace this
         gdown.download(f"https://drive.google.com/uc?id={file_id}", model_path, quiet=False)
 
     return YOLO(model_path)
 
 model = load_model()
 
-# 🎨 Style
+# ✅ CSS Styling
 st.markdown("""
     <style>
         .stApp {
@@ -32,23 +32,26 @@ st.markdown("""
             color: white;
             padding: 40px;
         }
-        h1, h2 {
-            text-align: center;
-            font-weight: bold;
+        h1 {
             color: white;
+            font-weight: bold;
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 40px;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# 🏷️ Title
-st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
-st.markdown("<h2>Upload or Take a Picture</h2>", unsafe_allow_html=True)
+# ✅ Heading
+st.markdown("<h1>Upload or Take a Picture</h1>", unsafe_allow_html=True)
 
-# 📤 Upload or camera
-uploaded_file = st.file_uploader("📷 Upload an image", type=["jpg", "jpeg", "png"])
-camera_image = st.camera_input("📸 Or take a picture")
+# 📤 Upload image
+uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
-# 🧠 Inference
+# 📸 Camera input
+camera_image = st.camera_input("Take a picture")
+
+# 🧠 Function to run model and return result image + label
 def predict_and_draw(image_pil):
     image = np.array(image_pil)
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -57,7 +60,7 @@ def predict_and_draw(image_pil):
     result = results[0]
     boxes = result.boxes if result.boxes is not None else []
 
-    detected = False
+    detected_scoliosis = False
 
     for box in boxes:
         cls_id = int(box.cls[0])
@@ -66,21 +69,26 @@ def predict_and_draw(image_pil):
         x1, y1, x2, y2 = map(int, box.xyxy[0])
 
         if label == "scoliosis":
-            detected = True
+            detected_scoliosis = True
             cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
             cv2.putText(image, f"{label} {conf:.2f}", (x1, y1 - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
-    result_img = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    result_text = "✅ ตรวจพบ Scoliosis!" if detected else "✅ ไม่พบความผิดปกติ"
-    return result_img, result_text
+    result_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    result_text = "ตรวจพบ Scoliosis!" if detected_scoliosis else "ไม่พบความผิดปกติ"
+    return result_image, result_text
 
-# ▶️ Run prediction
-input_image = uploaded_file or camera_image
+# 🖼️ Predict and display
+if uploaded_file is not None:
+    image_pil = Image.open(uploaded_file)
+    with st.spinner("กำลังวิเคราะห์..."):
+        result_image, result_text = predict_and_draw(image_pil)
+    st.image(result_image, caption=result_text, use_column_width=True)
+    st.success(result_text)
 
-if input_image is not None:
-    img = Image.open(input_image)
-    with st.spinner("🔍 Analyzing..."):
-        result_image, result_text = predict_and_draw(img)
+elif camera_image is not None:
+    image_pil = Image.open(camera_image)
+    with st.spinner("กำลังวิเคราะห์..."):
+        result_image, result_text = predict_and_draw(image_pil)
     st.image(result_image, caption=result_text, use_column_width=True)
     st.success(result_text)
