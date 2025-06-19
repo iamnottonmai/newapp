@@ -89,20 +89,20 @@ def predict_and_draw(image_pil):
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
     result_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    result_text = "ตรวจพบ Scoliosis!" if detected_scoliosis else "ไม่พบความผิดปกติ"
+    result_text = "Scoliosis detected. Further evaluation and treatment may be needed." if detected_scoliosis else "No abnormalities detected"
     return result_image, result_text
 
 # 🖼️ Predict and display
 if uploaded_file is not None:
     image_pil = Image.open(uploaded_file)
-    with st.spinner("กำลังวิเคราะห์..."):
+    with st.spinner("Analysing..."):
         result_image, result_text = predict_and_draw(image_pil)
     st.image(result_image, caption=result_text, use_column_width=True)
     st.success(result_text)
 
 elif camera_image is not None:
     image_pil = Image.open(camera_image)
-    with st.spinner("กำลังวิเคราะห์..."):
+    with st.spinner("Analysing..."):
         result_image, result_text = predict_and_draw(image_pil)
     st.image(result_image, caption=result_text, use_column_width=True)
     st.success(result_text)
