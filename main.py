@@ -46,5 +46,5 @@ st.markdown('<div class="scoliosis-text">SCOLIOSIS</div>', unsafe_allow_html=Tru
 with st.container():
     st.markdown('<div class="click-here-button">', unsafe_allow_html=True)
     if st.button("CLICK HERE"):
-        st.switch_page("page1.py")  # ✅ correct!
+        st.switch_page("pages/page1.py")  # ✅ correct!
     st.markdown('</div>', unsafe_allow_html=True)
