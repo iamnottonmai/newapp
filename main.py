@@ -34,7 +34,7 @@ st.markdown("""
             padding: 40px;
         }
         h1 {
-            color: white;
+            color: black;
             font-weight: bold;
             font-size: 48px;
             text-align: left;
