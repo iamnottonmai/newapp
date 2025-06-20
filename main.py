@@ -30,14 +30,14 @@ st.markdown("""
         .stApp {
             background-color: #9683D2;
             min-height: 100vh;
-            color: white;
+            color: black;
             padding: 40px;
         }
         h1 {
             color: white;
             font-weight: bold;
             font-size: 48px;
-            text-align: center;
+            text-align: left;
             margin-bottom: 40px;
         }
     </style>
@@ -97,7 +97,7 @@ def display_results(image_pil):
     if "Scoliosis detected" in result_text:
         escaped_text = escape(result_text)
         st.markdown(f"""
-            <div style="background-color:#cd5c5c; padding: 10px; border-radius: 5px; color: white; font-weight: bold; text-align:center;">
+            <div style="background-color:#cd5c5c; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;">
                 {escaped_text}
             </div>
         """, unsafe_allow_html=True)
