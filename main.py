@@ -28,6 +28,7 @@ st.markdown("""
             color: black;
             padding: 40px;
         }
+
         h1 {
             color: black;
             font-weight: bold;
@@ -35,23 +36,34 @@ st.markdown("""
             text-align: left;
             margin-bottom: 40px;
         }
+
         .stFileUploader {
             background-color: #e6f0ff !important;
             border: 2px dashed #4a90e2 !important;
             padding: 20px !important;
             border-radius: 10px;
         }
+
         .stFileUploader div:first-child {
-            color: black !important; /* "Upload an image" */
+            color: black !important; /* Upload an image */
             font-weight: bold;
         }
+
         .stFileUploader label {
             color: black !important;
         }
+
         label[for^="camera-input"] {
-            color: white !important;  /* "Take a picture" */
+            color: white !important;  /* Take a picture label */
             font-weight: bold;
             font-size: 18px;
+        }
+
+        /* ✅ Camera button style */
+        [data-testid="stCameraInput"] button {
+            background-color: #e6f0ff !important;  /* Blue background */
+            color: black !important;               /* Black text */
+            font-weight: bold;
         }
     </style>
 """, unsafe_allow_html=True)
