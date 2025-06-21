@@ -14,12 +14,9 @@ st.set_page_config(page_title="Scoliosis")
 @st.cache_resource
 def load_model():
     model_path = os.path.join(os.path.dirname(__file__), '..', 'best.pt')
-
-    # 🔽 If model doesn't exist, download from Google Drive
     if not os.path.exists(model_path):
         file_id = "1HGdlajuTx8ly0zc-rmYMd0ni4kHIoTv-"
         gdown.download(f"https://drive.google.com/uc?id={file_id}", model_path, quiet=False)
-
     return YOLO(model_path)
 
 model = load_model()
@@ -28,8 +25,7 @@ model = load_model()
 st.markdown("""
     <style>
         .stApp {
-            background-color: #9683D2;
-            min-height: 100vh;
+            background-color: white;
             color: black;
             padding: 40px;
         }
@@ -40,12 +36,22 @@ st.markdown("""
             text-align: left;
             margin-bottom: 40px;
         }
+        .stFileUploader {
+            background-color: #e6f0ff !important;
+            border: 2px dashed #4a90e2 !important;
+            padding: 20px !important;
+            border-radius: 10px;
+            color: black !important;
+        }
+        .stFileUploader label, .stFileUploader div {
+            color: black !important;
+        }
     </style>
 """, unsafe_allow_html=True)
 
 # ✅ Heading
 st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
-st.markdown("<h2>Upload or Take a Picture</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='color:black;'>Upload or Take a Picture</h2>", unsafe_allow_html=True)
 
 # 📤 Upload image
 uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
@@ -94,15 +100,19 @@ def display_results(image_pil):
 
     st.image(result_image, use_container_width=True)
 
+    escaped_text = escape(result_text)
     if "Scoliosis detected" in result_text:
-        escaped_text = escape(result_text)
         st.markdown(f"""
-            <div style="background-color:#cd5c5c; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;">
+            <div style="background-color:#ffcccc; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;">
                 {escaped_text}
             </div>
         """, unsafe_allow_html=True)
     else:
-        st.success(result_text)
+        st.markdown(f"""
+            <div style="background-color:#c8e6c9; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;">
+                {escaped_text}
+            </div>
+        """, unsafe_allow_html=True)
 
 # 🚀 Trigger
 if uploaded_file is not None:
