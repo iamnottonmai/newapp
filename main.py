@@ -118,6 +118,7 @@ if show_example_images:
 
 # 🧠 Prediction
 def predict_and_draw(image_pil):
+    confidence_threshold = 0.55
     image = np.array(image_pil)
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     results = model(image)
@@ -126,9 +127,12 @@ def predict_and_draw(image_pil):
     detected_scoliosis = False
 
     for box in boxes:
+        conf = float(box.conf[0])
+        if conf < confidence_threshold:
+            continue
+
         cls_id = int(box.cls[0])
         label = model.names[cls_id]
-        conf = float(box.conf[0])
         x1, y1, x2, y2 = map(int, box.xyxy[0])
 
         if label == "scoliosis":
