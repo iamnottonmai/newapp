@@ -37,7 +37,7 @@ st.markdown("""
             margin-bottom: 40px;
         }
 
-        .stFileUploader {
+        .stFileUploader, .custom-box {
             background-color: #e6f0ff !important;
             border: 2px dashed #4a90e2 !important;
             padding: 20px !important;
@@ -61,6 +61,12 @@ st.markdown("""
             color: black !important;
             font-weight: bold;
         }
+
+        .sample-caption {
+            font-size: 14px;
+            text-align: center;
+            color: #444;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -68,7 +74,7 @@ st.markdown("""
 st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
 st.markdown("<h2 style='color:black;'>Upload, Take, or Use a Sample Image</h2>", unsafe_allow_html=True)
 
-# 📤 File Upload + Test Photo Selector (styled boxes + better label)
+# 📤 File Upload + Test Photo Selector
 col_upload, col_test = st.columns([2, 1])
 
 with col_upload:
@@ -77,27 +83,28 @@ with col_upload:
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_test:
-    st.markdown("**Use sample image**")
-    st.markdown('<div class="stFileUploader">', unsafe_allow_html=True)
+    st.markdown('<div class="custom-box">', unsafe_allow_html=True)
+    st.markdown("<h4 style='margin-top:0'>Use sample image</h4>", unsafe_allow_html=True)
 
     test_image_folder = "test_images"
     test_image_files = sorted([f for f in os.listdir(test_image_folder) if f.lower().endswith(('png', 'jpg', 'jpeg'))])
 
     selected_test_image = st.selectbox(
-        "Select from sample images",
+        "",
         [""] + test_image_files,
         format_func=lambda x: "Select an image" if x == "" else x,
         label_visibility="collapsed"
     )
 
     if selected_test_image:
-        st.image(os.path.join(test_image_folder, selected_test_image), width=250, caption="Selected sample image")
+        st.image(os.path.join(test_image_folder, selected_test_image), width=250)
+        st.markdown("<div class='sample-caption'>Selected sample image</div>", unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# 📌 Submission instructions (no top margin)
+# 📌 Submission instructions (closer spacing)
 st.markdown("""
-<div style='margin-bottom: 20px; color: black; font-weight: bold;'>
+<div style='margin-top: -20px; margin-bottom: 20px; color: black; font-weight: bold;'>
 Photograph Submission Instructions:
 <ol>
 <li>Nothing should obstruct the back.</li>
