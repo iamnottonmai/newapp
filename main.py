@@ -101,18 +101,20 @@ if not selected_test_image:
     </div>
     """, unsafe_allow_html=True)
 
-# 📂 Optional: View example images in a dropdown
-with st.expander("📸 Click to view example images"):
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        st.image("IMG_1436_JPG_jpg.rf.b5bdcd6762cd0ce96b33f81720ca160f.jpg", width=250)
-    with col2:
-        st.image("IMG_1435_JPG_jpg.rf.7bf2e18e950b4245a10bda6dcc05036f.jpg", width=250)
-
 # 📸 Camera input — Only show if nothing else is selected
 camera_image = None
 if uploaded_file is None and not selected_test_image:
     camera_image = st.camera_input("Take a picture")
+
+# 📂 Optional: View example images in a dropdown (only show if not using sample image)
+show_example_images = uploaded_file is None and not selected_test_image
+if show_example_images:
+    with st.expander("📸 Click to view example images"):
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            st.image("IMG_1436_JPG_jpg.rf.b5bdcd6762cd0ce96b33f81720ca160f.jpg", width=250)
+        with col2:
+            st.image("IMG_1435_JPG_jpg.rf.7bf2e18e950b4245a10bda6dcc05036f.jpg", width=250)
 
 # 🧠 Prediction
 def predict_and_draw(image_pil):
