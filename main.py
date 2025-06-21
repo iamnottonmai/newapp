@@ -67,13 +67,12 @@ st.markdown("""
 st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
 st.markdown("<h2 style='color:black;'>Upload, Take, or Choose a Test Photo</h2>", unsafe_allow_html=True)
 
+# 📤 File Upload + Test Photo Selector
 col_upload, col_test = st.columns([2, 1])
 
-# 📤 Upload image
 with col_upload:
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
-# 📁 Test Image Selector
 with col_test:
     st.markdown("**Choose test photo**")
     test_image_folder = "test_images"
@@ -108,10 +107,12 @@ with st.expander("📸 Click to view example images"):
     with col2:
         st.image("IMG_1435_JPG_jpg.rf.7bf2e18e950b4245a10bda6dcc05036f.jpg", width=250)
 
-# 📸 Camera input
-camera_image = st.camera_input("Take a picture")
+# 📸 Camera input — Only show if nothing else is selected
+camera_image = None
+if uploaded_file is None and not selected_test_image:
+    camera_image = st.camera_input("Take a picture")
 
-# 🧠 Prediction function
+# 🧠 Prediction
 def predict_and_draw(image_pil):
     image = np.array(image_pil)
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
