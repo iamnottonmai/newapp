@@ -7,7 +7,6 @@ import os
 import gdown
 from html import escape
 
-# 🟢 ต้องอยู่บรรทัดแรก
 st.set_page_config(page_title="Scoliosis")
 
 @st.cache_resource
@@ -37,11 +36,12 @@ st.markdown("""
             margin-bottom: 40px;
         }
 
-        .stFileUploader {
+        .stFileUploader, .blue-box {
             background-color: #e6f0ff !important;
             border: 2px dashed #4a90e2 !important;
             padding: 20px !important;
             border-radius: 10px;
+            margin-bottom: 20px;
         }
 
         .stFileUploader div:first-child {
@@ -65,7 +65,7 @@ st.markdown("""
 
 # ✅ Heading
 st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
-st.markdown("<h2 style='color:black;'>Upload, Take, or Choose a Test Photo</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='color:black;'>Upload, Take, or Select a Sample Image</h2>", unsafe_allow_html=True)
 
 # 📤 File Upload + Test Photo Selector
 col_upload, col_test = st.columns([2, 1])
@@ -74,7 +74,7 @@ with col_upload:
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
 with col_test:
-    st.markdown("**Choose test photo**")
+    st.markdown('<div class="blue-box"><b>Select a Sample Image</b>', unsafe_allow_html=True)
     test_image_folder = "test_images"
     test_image_files = sorted([f for f in os.listdir(test_image_folder) if f.lower().endswith(('png', 'jpg', 'jpeg'))])
 
@@ -84,20 +84,22 @@ with col_test:
         format_func=lambda x: "Select an image" if x == "" else x,
         label_visibility="collapsed"
     )
+    st.markdown('</div>', unsafe_allow_html=True)
 
     if selected_test_image:
-        st.image(os.path.join(test_image_folder, selected_test_image), width=250, caption="Selected test image")
+        st.image(os.path.join(test_image_folder, selected_test_image), width=250, caption="Selected sample image")
 
-# 📌 Submission instructions
-st.markdown("""
-<div style='margin-top: -10px; margin-bottom: 20px; color: black; font-weight: bold;'>
-Photograph Submission Instructions:
-<ol>
-<li>Nothing should obstruct the back.</li>
-<li>Stand far enough from the camera to see the entire back.</li>
-</ol>
-</div>
-""", unsafe_allow_html=True)
+# 📌 Submission instructions (only show if no sample image is selected)
+if not selected_test_image:
+    st.markdown("""
+    <div style='margin-top: -10px; margin-bottom: 20px; color: black; font-weight: bold;'>
+    Photograph Submission Instructions:
+    <ol>
+    <li>Nothing should obstruct the back.</li>
+    <li>Stand far enough from the camera to see the entire back.</li>
+    </ol>
+    </div>
+    """, unsafe_allow_html=True)
 
 # 📂 Optional: View example images in a dropdown
 with st.expander("📸 Click to view example images"):
