@@ -45,24 +45,19 @@ st.markdown("""
         }
 
         .stFileUploader div:first-child {
-            color: black !important; /* Upload an image */
+            color: black !important;
             font-weight: bold;
         }
 
-        .stFileUploader label {
-            color: black !important;
-        }
-
         label[for^="camera-input"] {
-            color: white !important;  /* Take a picture label */
+            color: white !important;
             font-weight: bold;
             font-size: 18px;
         }
 
-        /* ✅ Camera button style */
         [data-testid="stCameraInput"] button {
-            background-color: #e6f0ff !important;  /* Blue background */
-            color: black !important;               /* Black text */
+            background-color: #e6f0ff !important;
+            color: black !important;
             font-weight: bold;
         }
     </style>
@@ -70,10 +65,29 @@ st.markdown("""
 
 # ✅ Heading
 st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
-st.markdown("<h2 style='color:black;'>Upload or Take a Picture</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='color:black;'>Upload, Take, or Choose a Test Photo</h2>", unsafe_allow_html=True)
+
+col_upload, col_test = st.columns([2, 1])
 
 # 📤 Upload image
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+with col_upload:
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+
+# 📁 Test Image Selector
+with col_test:
+    st.markdown("**Choose test photo**")
+    test_image_folder = "test_images"
+    test_image_files = sorted([f for f in os.listdir(test_image_folder) if f.lower().endswith(('png', 'jpg', 'jpeg'))])
+
+    selected_test_image = st.selectbox(
+        "Select from sample images",
+        [""] + test_image_files,
+        format_func=lambda x: "Select an image" if x == "" else x,
+        label_visibility="collapsed"
+    )
+
+    if selected_test_image:
+        st.image(os.path.join(test_image_folder, selected_test_image), width=250, caption="Selected test image")
 
 # 📌 Submission instructions
 st.markdown("""
@@ -97,7 +111,7 @@ with st.expander("📸 Click to view example images"):
 # 📸 Camera input
 camera_image = st.camera_input("Take a picture")
 
-# 🧠 Run model
+# 🧠 Prediction function
 def predict_and_draw(image_pil):
     image = np.array(image_pil)
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -122,7 +136,7 @@ def predict_and_draw(image_pil):
     result_text = "Scoliosis detected. Further evaluation and treatment may be needed." if detected_scoliosis else "No abnormalities detected"
     return result_image, result_text
 
-# 📊 Display result
+# 📊 Result Display
 def display_results(image_pil):
     with st.spinner("Analysing..."):
         result_image, result_text = predict_and_draw(image_pil)
@@ -143,10 +157,13 @@ def display_results(image_pil):
             </div>
         """, unsafe_allow_html=True)
 
-# 🚀 Trigger
+# 🚀 Run
 if uploaded_file is not None:
     image_pil = Image.open(uploaded_file)
     display_results(image_pil)
 elif camera_image is not None:
     image_pil = Image.open(camera_image)
+    display_results(image_pil)
+elif selected_test_image:
+    image_pil = Image.open(os.path.join(test_image_folder, selected_test_image))
     display_results(image_pil)
