@@ -42,6 +42,7 @@ st.markdown("""
             border: 2px dashed #4a90e2 !important;
             padding: 20px !important;
             border-radius: 10px;
+            margin-bottom: 20px;
         }
 
         .stFileUploader div:first-child {
@@ -65,16 +66,20 @@ st.markdown("""
 
 # ✅ Heading
 st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
-st.markdown("<h2 style='color:black;'>Upload, Take, or Choose a Test Photo</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='color:black;'>Upload, Take, or Use a Sample Image</h2>", unsafe_allow_html=True)
 
-# 📤 File Upload + Test Photo Selector
+# 📤 File Upload + Test Photo Selector (styled boxes + better label)
 col_upload, col_test = st.columns([2, 1])
 
 with col_upload:
+    st.markdown('<div class="stFileUploader">', unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col_test:
-    st.markdown("**Choose test photo**")
+    st.markdown("**Use sample image**")
+    st.markdown('<div class="stFileUploader">', unsafe_allow_html=True)
+
     test_image_folder = "test_images"
     test_image_files = sorted([f for f in os.listdir(test_image_folder) if f.lower().endswith(('png', 'jpg', 'jpeg'))])
 
@@ -86,11 +91,13 @@ with col_test:
     )
 
     if selected_test_image:
-        st.image(os.path.join(test_image_folder, selected_test_image), width=250, caption="Selected test image")
+        st.image(os.path.join(test_image_folder, selected_test_image), width=250, caption="Selected sample image")
 
-# 📌 Submission instructions
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# 📌 Submission instructions (no top margin)
 st.markdown("""
-<div style='margin-top: -10px; margin-bottom: 20px; color: black; font-weight: bold;'>
+<div style='margin-bottom: 20px; color: black; font-weight: bold;'>
 Photograph Submission Instructions:
 <ol>
 <li>Nothing should obstruct the back.</li>
