@@ -10,7 +10,6 @@ from html import escape
 # 🟢 ต้องอยู่บรรทัดแรก
 st.set_page_config(page_title="Scoliosis")
 
-# โหลดโมเดล (โหลดแค่ครั้งเดียว)
 @st.cache_resource
 def load_model():
     model_path = os.path.join(os.path.dirname(__file__), '..', 'best.pt')
@@ -41,9 +40,12 @@ st.markdown("""
             border: 2px dashed #4a90e2 !important;
             padding: 20px !important;
             border-radius: 10px;
-            color: black !important;
         }
-        .stFileUploader label, .stFileUploader div {
+        .stFileUploader div:first-child {
+            color: white !important;
+            font-weight: bold;
+        }
+        .stFileUploader label {
             color: black !important;
         }
     </style>
@@ -56,14 +58,24 @@ st.markdown("<h2 style='color:black;'>Upload or Take a Picture</h2>", unsafe_all
 # 📤 Upload image
 uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
-# 🖼️ Example images
-if uploaded_file is None:
-    st.markdown("### 🔍 Example Images")
-    col1, col2, col3, col4, col5 = st.columns([1, 2, 1, 2, 1])
+# 📌 Submission instructions
+st.markdown("""
+<div style='margin-top: -10px; margin-bottom: 20px; color: black; font-weight: bold;'>
+Photograph Submission Instructions:
+<ol>
+<li>Nothing should obstruct the back.</li>
+<li>Stand far enough from the camera to see the entire back.</li>
+</ol>
+</div>
+""", unsafe_allow_html=True)
+
+# 📂 Optional: View example images in a dropdown
+with st.expander("📸 Click to view example images"):
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        st.image("IMG_1436_JPG_jpg.rf.b5bdcd6762cd0ce96b33f81720ca160f.jpg", width=250)
     with col2:
-        st.image("IMG_1436_JPG_jpg.rf.b5bdcd6762cd0ce96b33f81720ca160f.jpg", width=200)
-    with col4:
-        st.image("IMG_1435_JPG_jpg.rf.7bf2e18e950b4245a10bda6dcc05036f.jpg", width=200)
+        st.image("IMG_1435_JPG_jpg.rf.7bf2e18e950b4245a10bda6dcc05036f.jpg", width=250)
 
 # 📸 Camera input
 camera_image = st.camera_input("Take a picture")
