@@ -118,7 +118,7 @@ if show_example_images:
 
 # 🧠 Prediction
 def predict_and_draw(image_pil):
-    confidence_threshold = 0.55
+    confidence_threshold = 0.4
     image = np.array(image_pil)
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     results = model(image)
