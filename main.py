@@ -46,14 +46,19 @@ st.markdown("""
             font-weight: bold;
         }
         .stFileUploader label {
-            color: black !important;
+            color: white !important;
+        }
+        label[for^="camera-input"] {
+            color: white !important;
+            font-weight: bold;
+            font-size: 18px;
         }
     </style>
 """, unsafe_allow_html=True)
 
 # ✅ Heading
 st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
-st.markdown("<h2 style='color:black;'>Upload or Take a Picture</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='color:white;'>Upload or Take a Picture</h2>", unsafe_allow_html=True)
 
 # 📤 Upload image
 uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
