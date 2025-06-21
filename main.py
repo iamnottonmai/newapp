@@ -37,15 +37,28 @@ st.markdown("""
             margin-bottom: 40px;
         }
 
-        .stFileUploader, .custom-box {
-            background-color: #e6f0ff !important;
-            border: 2px dashed #4a90e2 !important;
-            padding: 20px !important;
-            border-radius: 10px;
-            margin-bottom: 20px;
+        .input-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 0px;
         }
 
-        .stFileUploader div:first-child {
+        .input-box {
+            background-color: #e6f0ff;
+            border: 2px dashed #4a90e2;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .sample-caption {
+            font-size: 14px;
+            text-align: center;
+            color: #444;
+        }
+
+        [data-testid="stCameraInput"] button {
+            background-color: #e6f0ff !important;
             color: black !important;
             font-weight: bold;
         }
@@ -55,18 +68,6 @@ st.markdown("""
             font-weight: bold;
             font-size: 18px;
         }
-
-        [data-testid="stCameraInput"] button {
-            background-color: #e6f0ff !important;
-            color: black !important;
-            font-weight: bold;
-        }
-
-        .sample-caption {
-            font-size: 14px;
-            text-align: center;
-            color: #444;
-        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -74,23 +75,25 @@ st.markdown("""
 st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
 st.markdown("<h2 style='color:black;'>Upload, Take, or Use a Sample Image</h2>", unsafe_allow_html=True)
 
-# 📤 File Upload + Test Photo Selector
-col_upload, col_test = st.columns([2, 1])
+# 📤 Custom Grid Layout for Inputs
+st.markdown('<div class="input-grid">', unsafe_allow_html=True)
 
-with col_upload:
-    st.markdown('<div class="stFileUploader">', unsafe_allow_html=True)
+# Upload image box
+with st.container():
+    st.markdown('<div class="input-box">', unsafe_allow_html=True)
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
     st.markdown('</div>', unsafe_allow_html=True)
 
-with col_test:
-    st.markdown('<div class="custom-box">', unsafe_allow_html=True)
-    st.markdown("<h4 style='margin-top:0'>Use sample image</h4>", unsafe_allow_html=True)
+# Sample image box
+with st.container():
+    st.markdown('<div class="input-box">', unsafe_allow_html=True)
+    st.markdown("**Use sample image**")
 
     test_image_folder = "test_images"
     test_image_files = sorted([f for f in os.listdir(test_image_folder) if f.lower().endswith(('png', 'jpg', 'jpeg'))])
 
     selected_test_image = st.selectbox(
-        "",
+        "Select from sample images",
         [""] + test_image_files,
         format_func=lambda x: "Select an image" if x == "" else x,
         label_visibility="collapsed"
@@ -102,9 +105,11 @@ with col_test:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# 📌 Submission instructions (closer spacing)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# 📌 Submission instructions
 st.markdown("""
-<div style='margin-top: -20px; margin-bottom: 20px; color: black; font-weight: bold;'>
+<div style='margin-top: 5px; margin-bottom: 20px; color: black; font-weight: bold;'>
 Photograph Submission Instructions:
 <ol>
 <li>Nothing should obstruct the back.</li>
@@ -113,7 +118,7 @@ Photograph Submission Instructions:
 </div>
 """, unsafe_allow_html=True)
 
-# 📂 Optional: View example images in a dropdown
+# 📂 Optional: View example images
 with st.expander("📸 Click to view example images"):
     col1, col2 = st.columns([1, 1])
     with col1:
@@ -151,7 +156,7 @@ def predict_and_draw(image_pil):
     result_text = "Scoliosis detected. Further evaluation and treatment may be needed." if detected_scoliosis else "No abnormalities detected"
     return result_image, result_text
 
-# 📊 Result Display
+# 📊 Display results
 def display_results(image_pil):
     with st.spinner("Analysing..."):
         result_image, result_text = predict_and_draw(image_pil)
@@ -172,7 +177,7 @@ def display_results(image_pil):
             </div>
         """, unsafe_allow_html=True)
 
-# 🚀 Run
+# 🚀 Run model
 if uploaded_file is not None:
     image_pil = Image.open(uploaded_file)
     display_results(image_pil)
