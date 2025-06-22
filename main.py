@@ -36,7 +36,7 @@ st.markdown("""
         }
 
         .stFileUploader div:first-child {
-            color: black !important;
+            color: white !important;
             font-weight: bold;
         }
 
@@ -74,34 +74,30 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ✅ Heading with clickable logo
+# ✅ Heading with logo (not clickable)
 st.markdown("""
 <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 40px;">
-    <a href="https://yoursite.com" target="_blank">
-        <img src="logo.jpg" alt="Logo" style="height: 60px;">
-    </a>
+    <img src="logo.png" alt="Logo" style="height: 60px;">
     <h1 style="color: black; font-size: 48px; margin: 0;">Scoliosis Detection</h1>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown("<h2 style='color:black;'>Upload or Take a Picture</h2>", unsafe_allow_html=True)
 
-# 📁 Test image thumbnails
+# 📁 Test images
 test_image_files = [f"test{i}.jpg" for i in range(1, 11)]
 test_image_labels = [f"Test Image {i}" for i in range(1, 11)]
 test_image_dict = dict(zip(test_image_labels, test_image_files))
 
-# Upload and Test Selection
+# Upload & test selection side by side
 col_upload, col_test = st.columns([3, 2])
 with col_upload:
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 with col_test:
-    with st.expander("📁 Choose test photos"):
+    with st.expander("Choose sample photo"):
         selected_test = st.selectbox("Select a test image", test_image_labels)
         if selected_test:
-            test_path = test_image_dict[selected_test]
-            image_pil = Image.open(test_path)
-            st.image(image_pil, caption=selected_test, use_column_width=True)
+            image_pil = Image.open(test_image_dict[selected_test])
             st.info("Test image selected. Running scoliosis detection...")
 
 # 📌 Submission instructions
@@ -115,7 +111,7 @@ Photograph Submission Instructions:
 </div>
 """, unsafe_allow_html=True)
 
-# 📂 Optional: Example images
+# 📂 Example images (dropdown)
 with st.expander("📸 Click to view example images"):
     col1, col2 = st.columns(2)
     with col1:
@@ -150,7 +146,7 @@ def predict_and_draw(image_pil):
     result_text = "Scoliosis detected. Further evaluation and treatment may be needed." if detected_scoliosis else "No abnormalities detected"
     return result_image, result_text
 
-# ✅ Display logic
+# ✅ Result display
 def display_results(image_pil):
     with st.spinner("Analysing..."):
         result_image, result_text = predict_and_draw(image_pil)
@@ -169,14 +165,13 @@ def display_results(image_pil):
             </div>
         """, unsafe_allow_html=True)
 
-# 🚀 Run detection on chosen method
+# 🚀 Trigger prediction
 if uploaded_file is not None:
     image_pil = Image.open(uploaded_file)
     display_results(image_pil)
 elif camera_image is not None:
     image_pil = Image.open(camera_image)
     display_results(image_pil)
-    # Optional retake button (simulated)
     st.markdown('<div class="retake-button">⬅️ Retake Photo (Reload Page)</div>', unsafe_allow_html=True)
 elif selected_test:
     image_pil = Image.open(test_image_dict[selected_test])
