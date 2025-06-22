@@ -100,12 +100,13 @@ col_upload, col_test = st.columns([3, 2])
 with col_upload:
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 with col_test:
-    with st.expander("Choose sample image"):
+    with st.expander("📁 Choose test photos"):
         selected_test = st.selectbox("Select a test image", list(test_images.keys()))
         if selected_test:
-            test_path = test_images[selected_test]
+            test_path = os.path.join(os.path.dirname(__file__), test_images[selected_test])
             image_pil = Image.open(test_path)
             display_results(image_pil)
+
 
 # 📸 Camera input
 camera_image = st.camera_input("Take a picture")
