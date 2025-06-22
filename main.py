@@ -7,7 +7,6 @@ import os
 import gdown
 from html import escape
 
-# 🟢 ต้องอยู่บรรทัดแรก
 st.set_page_config(page_title="Scoliosis")
 
 @st.cache_resource
@@ -37,20 +36,17 @@ st.markdown("""
             margin-bottom: 40px;
         }
 
-        .stFileUploader {
+        .stFileUploader, .blue-box {
             background-color: #e6f0ff !important;
             border: 2px dashed #4a90e2 !important;
             padding: 20px !important;
             border-radius: 10px;
+            margin-bottom: 20px;
         }
 
         .stFileUploader div:first-child {
             color: black !important;
             font-weight: bold;
-        }
-
-        .stFileUploader label {
-            color: black !important;
         }
 
         label[for^="camera-input"] {
@@ -69,50 +65,60 @@ st.markdown("""
 
 # ✅ Heading
 st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
-st.markdown("<h2 style='color:black;'>Upload or Take a Picture</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='color:black;'>Upload, Take, or Select a Sample Image</h2>", unsafe_allow_html=True)
 
-# 📌 Submission instructions
-st.markdown("""
-<div style='margin-top: -10px; margin-bottom: 20px; color: black; font-weight: bold;'>
-Photograph Submission Instructions:
-<ol>
-<li>Nothing should obstruct the back.</li>
-<li>Stand far enough from the camera to see the entire back.</li>
-</ol>
-</div>
-""", unsafe_allow_html=True)
+# 📤 File Upload + Test Photo Selector
+col_upload, col_test = st.columns([2, 1])
 
-# 📂 Choose upload or test image
-test_images = {
-    "Test Image 1": "test1.jpg",
-    "Test Image 2": "test2.jpg",
-    "Test Image 3": "test3.jpg",
-    "Test Image 4": "test4.jpg",
-    "Test Image 5": "test5.jpg",
-    "Test Image 6": "test6.jpg",
-    "Test Image 7": "test7.jpg",
-    "Test Image 8": "test8.jpg",
-    "Test Image 9": "test9.jpg",
-    "Test Image 10": "test10.jpg"
-}
-
-col_upload, col_test = st.columns([3, 2])
 with col_upload:
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+
 with col_test:
-    with st.expander("📁 Choose test photos"):
-        selected_test = st.selectbox("Select a test image", list(test_images.keys()))
-        if selected_test:
-            test_path = os.path.join(os.path.dirname(__file__), test_images[selected_test])
-            image_pil = Image.open(test_path)
-            display_results(image_pil)
+    st.markdown('<div class="blue-box"><b>Select a Sample Image</b>', unsafe_allow_html=True)
+    test_image_folder = "test_images"
+    test_image_files = sorted([f for f in os.listdir(test_image_folder) if f.lower().endswith(('png', 'jpg', 'jpeg'))])
 
+    selected_test_image = st.selectbox(
+        "Select from sample images",
+        [""] + test_image_files,
+        format_func=lambda x: "Select an image" if x == "" else x,
+        label_visibility="collapsed"
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# 📸 Camera input
-camera_image = st.camera_input("Take a picture")
+    if selected_test_image:
+        st.image(os.path.join(test_image_folder, selected_test_image), width=250, caption="Selected sample image")
 
-# 🧠 Run model
+# 📌 Submission instructions (only show if no sample image is selected)
+if not selected_test_image:
+    st.markdown("""
+    <div style='margin-top: -10px; margin-bottom: 20px; color: black; font-weight: bold;'>
+    Photograph Submission Instructions:
+    <ol>
+    <li>Nothing should obstruct the back.</li>
+    <li>Stand far enough from the camera to see the entire back.</li>
+    </ol>
+    </div>
+    """, unsafe_allow_html=True)
+
+# 📸 Camera input — Only show if nothing else is selected
+camera_image = None
+if uploaded_file is None and not selected_test_image:
+    camera_image = st.camera_input("Take a picture")
+
+# 📂 Optional: View example images in a dropdown (only show if not using sample image)
+show_example_images = uploaded_file is None and not selected_test_image
+if show_example_images:
+    with st.expander("📸 Click to view example images"):
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            st.image("IMG_1436_JPG_jpg.rf.b5bdcd6762cd0ce96b33f81720ca160f.jpg", width=250)
+        with col2:
+            st.image("IMG_1435_JPG_jpg.rf.7bf2e18e950b4245a10bda6dcc05036f.jpg", width=250)
+
+# 🧠 Prediction
 def predict_and_draw(image_pil):
+    confidence_threshold = 0.4
     image = np.array(image_pil)
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     results = model(image)
@@ -121,9 +127,12 @@ def predict_and_draw(image_pil):
     detected_scoliosis = False
 
     for box in boxes:
+        conf = float(box.conf[0])
+        if conf < confidence_threshold:
+            continue
+
         cls_id = int(box.cls[0])
         label = model.names[cls_id]
-        conf = float(box.conf[0])
         x1, y1, x2, y2 = map(int, box.xyxy[0])
 
         if label == "scoliosis":
@@ -136,7 +145,7 @@ def predict_and_draw(image_pil):
     result_text = "Scoliosis detected. Further evaluation and treatment may be needed." if detected_scoliosis else "No abnormalities detected"
     return result_image, result_text
 
-# 📊 Display result
+# 📊 Result Display
 def display_results(image_pil):
     with st.spinner("Analysing..."):
         result_image, result_text = predict_and_draw(image_pil)
@@ -157,10 +166,13 @@ def display_results(image_pil):
             </div>
         """, unsafe_allow_html=True)
 
-# 🚀 Trigger
+# 🚀 Run
 if uploaded_file is not None:
     image_pil = Image.open(uploaded_file)
     display_results(image_pil)
 elif camera_image is not None:
     image_pil = Image.open(camera_image)
+    display_results(image_pil)
+elif selected_test_image:
+    image_pil = Image.open(os.path.join(test_image_folder, selected_test_image))
     display_results(image_pil)
