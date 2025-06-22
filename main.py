@@ -45,7 +45,7 @@ st.markdown("""
         }
 
         .stFileUploader div:first-child {
-            color: black !important; /* Upload an image */
+            color: black !important;
             font-weight: bold;
         }
 
@@ -54,15 +54,14 @@ st.markdown("""
         }
 
         label[for^="camera-input"] {
-            color: white !important;  /* Take a picture label */
+            color: white !important;
             font-weight: bold;
             font-size: 18px;
         }
 
-        /* ✅ Camera button style */
         [data-testid="stCameraInput"] button {
-            background-color: #e6f0ff !important;  /* Blue background */
-            color: black !important;               /* Black text */
+            background-color: #e6f0ff !important;
+            color: black !important;
             font-weight: bold;
         }
     </style>
@@ -71,9 +70,6 @@ st.markdown("""
 # ✅ Heading
 st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
 st.markdown("<h2 style='color:black;'>Upload or Take a Picture</h2>", unsafe_allow_html=True)
-
-# 📤 Upload image
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
 # 📌 Submission instructions
 st.markdown("""
@@ -86,13 +82,30 @@ Photograph Submission Instructions:
 </div>
 """, unsafe_allow_html=True)
 
-# 📂 Optional: View example images in a dropdown
-with st.expander("📸 Click to view example images"):
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        st.image("IMG_1436_JPG_jpg.rf.b5bdcd6762cd0ce96b33f81720ca160f.jpg", width=250)
-    with col2:
-        st.image("IMG_1435_JPG_jpg.rf.7bf2e18e950b4245a10bda6dcc05036f.jpg", width=250)
+# 📂 Choose upload or test image
+test_images = {
+    "Test Image 1": "test1.jpg",
+    "Test Image 2": "test2.jpg",
+    "Test Image 3": "test3.jpg",
+    "Test Image 4": "test4.jpg",
+    "Test Image 5": "test5.jpg",
+    "Test Image 6": "test6.jpg",
+    "Test Image 7": "test7.jpg",
+    "Test Image 8": "test8.jpg",
+    "Test Image 9": "test9.jpg",
+    "Test Image 10": "test10.jpg"
+}
+
+col_upload, col_test = st.columns([3, 2])
+with col_upload:
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+with col_test:
+    with st.expander("Choose sample image"):
+        selected_test = st.selectbox("Select a test image", list(test_images.keys()))
+        if selected_test:
+            test_path = test_images[selected_test]
+            image_pil = Image.open(test_path)
+            display_results(image_pil)
 
 # 📸 Camera input
 camera_image = st.camera_input("Take a picture")
