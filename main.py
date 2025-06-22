@@ -63,8 +63,14 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ✅ Heading
-st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
+# ✅ Heading with Logo
+st.markdown(f"""
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px;">
+        <h1 style="margin: 0; color: black; font-weight: bold; font-size: 48px;">Scoliosis Detection</h1>
+        <img src="logo.jpg" alt="Logo" style="height: 60px; margin-left: 20px;">
+    </div>
+""", unsafe_allow_html=True)
+
 st.markdown("<h2 style='color:black;'>Upload, Take, or Select a Sample Image</h2>", unsafe_allow_html=True)
 
 # 📤 File Upload + Test Photo Selector
