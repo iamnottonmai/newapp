@@ -45,7 +45,7 @@ st.markdown("""
         }
 
         .stFileUploader div:first-child {
-            color: black !important;
+            color: black !important; /* Upload an image */
             font-weight: bold;
         }
 
@@ -54,98 +54,30 @@ st.markdown("""
         }
 
         label[for^="camera-input"] {
-            color: white !important;
+            color: white !important;  /* Take a picture label */
             font-weight: bold;
             font-size: 18px;
         }
 
+        /* ✅ Camera button style */
         [data-testid="stCameraInput"] button {
-            background-color: #e6f0ff !important;
-            color: black !important;
+            background-color: #e6f0ff !important;  /* Blue background */
+            color: black !important;               /* Black text */
             font-weight: bold;
-        }
-
-        details summary {
-            font-weight: bold;
-            font-size: 16px;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# ✅ Heading with Logo
-st.markdown("""
-<div style="display: flex; align-items: center; gap: 20px; margin-bottom: 40px;">
-    <img src="logo.jpg" alt="Logo" style="height: 60px;">
-    <h1 style="color: black; font-size: 48px; margin: 0;">Scoliosis Detection</h1>
-</div>
-""", unsafe_allow_html=True)
-
+# ✅ Heading
+st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
 st.markdown("<h2 style='color:black;'>Upload or Take a Picture</h2>", unsafe_allow_html=True)
 
-# 📁 Test images
-test_images = {
-    f"Test Image {i}": f"test{i}.jpg" for i in range(1, 11)
-}
-
-# 📤 Upload and test image select side by side
-col_upload, col_test = st.columns([3, 2])
-with col_upload:
-    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
-with col_test:
-    with st.expander("Choose sample photo"):
-        selected_test = st.selectbox("Select a test image", list(test_images.keys()))
-        if selected_test:
-            test_path = test_images[selected_test]
-            image_pil = Image.open(test_path)
-            st.image(image_pil, caption=selected_test, use_column_width=True)
-            st.info("Test image selected. Running scoliosis detection...")
-            # auto-run prediction
-            def predict_and_draw(image_pil):
-                image = np.array(image_pil)
-                image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-                results = model(image)
-                result = results[0]
-                boxes = result.boxes if result.boxes is not None else []
-                detected_scoliosis = False
-
-                for box in boxes:
-                    cls_id = int(box.cls[0])
-                    label = model.names[cls_id]
-                    conf = float(box.conf[0])
-                    x1, y1, x2, y2 = map(int, box.xyxy[0])
-                    if label == "scoliosis":
-                        detected_scoliosis = True
-                        cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                        cv2.putText(image, f"{label} {conf:.2f}", (x1, y1 - 10),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-
-                result_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-                result_text = "Scoliosis detected. Further evaluation and treatment may be needed." if detected_scoliosis else "No abnormalities detected"
-                return result_image, result_text
-
-            def display_results(image_pil):
-                with st.spinner("Analysing..."):
-                    result_image, result_text = predict_and_draw(image_pil)
-                st.image(result_image, use_container_width=True)
-                escaped_text = escape(result_text)
-                if "Scoliosis detected" in result_text:
-                    st.markdown(f"""
-                        <div style="background-color:#ffcccc; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;">
-                            {escaped_text}
-                        </div>
-                    """, unsafe_allow_html=True)
-                else:
-                    st.markdown(f"""
-                        <div style="background-color:#c8e6c9; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;">
-                            {escaped_text}
-                        </div>
-                    """, unsafe_allow_html=True)
-
-            display_results(image_pil)
+# 📤 Upload image
+uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
 # 📌 Submission instructions
 st.markdown("""
-<div style='margin-top: 20px; margin-bottom: 20px; color: black; font-weight: bold;'>
+<div style='margin-top: -10px; margin-bottom: 20px; color: black; font-weight: bold;'>
 Photograph Submission Instructions:
 <ol>
 <li>Nothing should obstruct the back.</li>
@@ -154,7 +86,7 @@ Photograph Submission Instructions:
 </div>
 """, unsafe_allow_html=True)
 
-# 📂 Optional: View example images in dropdown
+# 📂 Optional: View example images in a dropdown
 with st.expander("📸 Click to view example images"):
     col1, col2 = st.columns([1, 1])
     with col1:
@@ -165,7 +97,53 @@ with st.expander("📸 Click to view example images"):
 # 📸 Camera input
 camera_image = st.camera_input("Take a picture")
 
-# 🚀 Trigger manual uploads/camera
+# 🧠 Run model
+def predict_and_draw(image_pil):
+    image = np.array(image_pil)
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    results = model(image)
+    result = results[0]
+    boxes = result.boxes if result.boxes is not None else []
+    detected_scoliosis = False
+
+    for box in boxes:
+        cls_id = int(box.cls[0])
+        label = model.names[cls_id]
+        conf = float(box.conf[0])
+        x1, y1, x2, y2 = map(int, box.xyxy[0])
+
+        if label == "scoliosis":
+            detected_scoliosis = True
+            cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(image, f"{label} {conf:.2f}", (x1, y1 - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
+    result_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    result_text = "Scoliosis detected. Further evaluation and treatment may be needed." if detected_scoliosis else "No abnormalities detected"
+    return result_image, result_text
+
+# 📊 Display result
+def display_results(image_pil):
+    with st.spinner("Analysing..."):
+        result_image, result_text = predict_and_draw(image_pil)
+
+    st.image(result_image, use_container_width=True)
+
+    escaped_text = escape(result_text)
+    if "Scoliosis detected" in result_text:
+        st.markdown(f"""
+            <div style="background-color:#ffcccc; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;">
+                {escaped_text}
+            </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown(f"""
+            <div style="background-color:#c8e6c9; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;">
+                {escaped_text}
+            </div>
+        """, unsafe_allow_html=True)
+
+# 🚀 Trigger
 if uploaded_file is not None:
     image_pil = Image.open(uploaded_file)
     display_results(image_pil)
