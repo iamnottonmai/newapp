@@ -143,7 +143,6 @@ if not selected_test_image:
 
 camera_image = None
 if uploaded_file is None and not selected_test_image:
-    st.markdown("<p style='color:gray; font-size:14px;'>📸 Camera preview is mirrored for convenience. Detection is done on the mirrored image.</p>", unsafe_allow_html=True)
     camera_image = st.camera_input("Take a picture")
 
 show_example_images = uploaded_file is None and not selected_test_image
@@ -183,7 +182,7 @@ def predict_and_draw(image_pil):
     result_text = "Scoliosis detected. Further evaluation and treatment may be needed." if detected_scoliosis else "No abnormalities detected"
     return result_image, result_text
 
-def display_results(image_pil, is_camera=False):
+def display_results(image_pil):
     with st.spinner("Checking image..."):
         if not is_image_human_back(image_pil):
             st.markdown(f"""
@@ -195,9 +194,6 @@ def display_results(image_pil, is_camera=False):
 
     with st.spinner("Analysing..."):
         result_image, result_text = predict_and_draw(image_pil)
-
-    if is_camera:
-        result_image = ImageOps.mirror(result_image)
 
     st.image(result_image, use_container_width=True)
     escaped_text = escape(result_text)
@@ -218,12 +214,9 @@ def display_results(image_pil, is_camera=False):
 if uploaded_file is not None:
     image_pil = Image.open(uploaded_file)
     display_results(image_pil)
-
 elif camera_image is not None:
-    image_pil = Image.open(camera_image)
-    image_pil = ImageOps.mirror(image_pil)  # Mirror before analysis
-    display_results(image_pil, is_camera=True)  # Mirror result for display
-
+    image_pil = ImageOps.mirror(Image.open(camera_image))
+    display_results(image_pil)
 elif selected_test_image:
     image_pil = Image.open(os.path.join(test_image_folder, selected_test_image))
     display_results(image_pil)
