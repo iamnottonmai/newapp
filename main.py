@@ -124,8 +124,12 @@ def predict_and_draw(image_pil):
     results = model(image)
     result = results[0]
     boxes = result.boxes if result.boxes is not None else []
-    detected_scoliosis = False
 
+    # 🔍 If no boxes detected, reject image
+    if len(boxes) == 0:
+        return None, "❌ Unable to detect a human back. Please upload a clear image of a bare back."
+
+    detected_scoliosis = False
     for box in boxes:
         conf = float(box.conf[0])
         if conf < confidence_threshold:
@@ -150,9 +154,17 @@ def display_results(image_pil):
     with st.spinner("Analysing..."):
         result_image, result_text = predict_and_draw(image_pil)
 
-    st.image(result_image, use_container_width=True)
+    if result_image is None:
+        st.markdown(f"""
+            <div style="background-color:#fff3cd; padding: 10px; border-radius: 5px; color: #856404; font-weight: bold; text-align:center;">
+                {escape(result_text)}
+            </div>
+        """, unsafe_allow_html=True)
+        return
 
+    st.image(result_image, use_container_width=True)
     escaped_text = escape(result_text)
+
     if "Scoliosis detected" in result_text:
         st.markdown(f"""
             <div style="background-color:#ffcccc; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;">
@@ -166,7 +178,7 @@ def display_results(image_pil):
             </div>
         """, unsafe_allow_html=True)
 
-# 🚀 Run
+# 🚀 Run Prediction
 if uploaded_file is not None:
     image_pil = Image.open(uploaded_file)
     display_results(image_pil)
