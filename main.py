@@ -12,18 +12,16 @@ from torchvision import transforms
 
 st.set_page_config(page_title="Scoliosis")
 
-# ✅ Load YOLO model
 @st.cache_resource
-def load_yolo_model():
+def load_model():
     model_path = os.path.join(os.path.dirname(__file__), '..', 'best.pt')
     if not os.path.exists(model_path):
         file_id = "1HGdlajuTx8ly0zc-rmYMd0ni4kHIoTv-"
         gdown.download(f"https://drive.google.com/uc?id={file_id}", model_path, quiet=False)
     return YOLO(model_path)
 
-model = load_yolo_model()
+model = load_model()
 
-# ✅ Load CLIP model
 @st.cache_resource
 def load_clip_model():
     model, _, preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k')
@@ -64,7 +62,97 @@ def is_image_human_back(image_pil):
 
     return top_label == "a photo of a bare human back" and top_score > 0.25
 
-# ✅ Prediction
+# ✅ CSS Styling
+st.markdown("""
+    <style>
+        .stApp {
+            background-color: white;
+            color: black;
+            padding: 40px;
+        }
+
+        h1 {
+            color: black;
+            font-weight: bold;
+            font-size: 48px;
+            text-align: left;
+            margin-bottom: 40px;
+        }
+
+        .stFileUploader, .blue-box {
+            background-color: #e6f0ff !important;
+            border: 2px dashed #4a90e2 !important;
+            padding: 20px !important;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stFileUploader div:first-child {
+            color: black !important;
+            font-weight: bold;
+        }
+
+        label[for^="camera-input"] {
+            color: white !important;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        [data-testid="stCameraInput"] button {
+            background-color: #e6f0ff !important;
+            color: black !important;
+            font-weight: bold;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
+st.markdown("<h2 style='color:black;'>Upload, Take, or Select a Sample Image</h2>", unsafe_allow_html=True)
+
+col_upload, col_test = st.columns([2, 1])
+
+with col_upload:
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+
+with col_test:
+    st.markdown('<div class="blue-box"><b>Select a Sample Image</b>', unsafe_allow_html=True)
+    test_image_folder = "test_images"
+    test_image_files = sorted([f for f in os.listdir(test_image_folder) if f.lower().endswith(('png', 'jpg', 'jpeg'))])
+
+    selected_test_image = st.selectbox(
+        "Select from sample images",
+        [""] + test_image_files,
+        format_func=lambda x: "Select an image" if x == "" else x,
+        label_visibility="collapsed"
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if selected_test_image:
+        st.image(os.path.join(test_image_folder, selected_test_image), width=250, caption="Selected sample image")
+
+if not selected_test_image:
+    st.markdown("""
+    <div style='margin-top: -10px; margin-bottom: 20px; color: black; font-weight: bold;'>
+    Photograph Submission Instructions:
+    <ol>
+    <li>Nothing should obstruct the back.</li>
+    <li>Stand far enough from the camera to see the entire back.</li>
+    </ol>
+    </div>
+    """, unsafe_allow_html=True)
+
+camera_image = None
+if uploaded_file is None and not selected_test_image:
+    camera_image = st.camera_input("Take a picture")
+
+show_example_images = uploaded_file is None and not selected_test_image
+if show_example_images:
+    with st.expander("📸 Click to view example images"):
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            st.image("IMG_1436_JPG_jpg.rf.b5bdcd6762cd0ce96b33f81720ca160f.jpg", width=250)
+        with col2:
+            st.image("IMG_1435_JPG_jpg.rf.7bf2e18e950b4245a10bda6dcc05036f.jpg", width=250)
 
 def predict_and_draw(image_pil):
     confidence_threshold = 0.4
@@ -73,8 +161,8 @@ def predict_and_draw(image_pil):
     results = model(image)
     result = results[0]
     boxes = result.boxes if result.boxes is not None else []
-
     detected_scoliosis = False
+
     for box in boxes:
         conf = float(box.conf[0])
         if conf < confidence_threshold:
@@ -93,8 +181,6 @@ def predict_and_draw(image_pil):
     result_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
     result_text = "Scoliosis detected. Further evaluation and treatment may be needed." if detected_scoliosis else "No abnormalities detected"
     return result_image, result_text
-
-# ✅ Display results
 
 def display_results(image_pil):
     with st.spinner("Checking image..."):
@@ -125,15 +211,12 @@ def display_results(image_pil):
             </div>
         """, unsafe_allow_html=True)
 
-# ✅ Image uploader
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
-camera_image = None
-if uploaded_file is None:
-    camera_image = st.camera_input("Take a picture")
-
 if uploaded_file is not None:
     image_pil = Image.open(uploaded_file)
     display_results(image_pil)
 elif camera_image is not None:
     image_pil = Image.open(camera_image)
+    display_results(image_pil)
+elif selected_test_image:
+    image_pil = Image.open(os.path.join(test_image_folder, selected_test_image))
     display_results(image_pil)
