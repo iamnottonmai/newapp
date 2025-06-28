@@ -215,7 +215,8 @@ if uploaded_file is not None:
     image_pil = Image.open(uploaded_file)
     display_results(image_pil)
 elif camera_image is not None:
-    image_pil = ImageOps.mirror(Image.open(camera_image))
+    image_pil = Image.open(camera_image)
+    image_pil = ImageOps.mirror(image_pil)  # <-- ensure mirrored
     display_results(image_pil)
 elif selected_test_image:
     image_pil = Image.open(os.path.join(test_image_folder, selected_test_image))
