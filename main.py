@@ -133,13 +133,18 @@ with col_test:
 if not selected_test_image:
     st.markdown("""
     <div style='margin-top: -10px; margin-bottom: 20px; color: black; font-weight: bold;'>
-    Photograph Submission Instructions:
-    <ol>
-    <li>Nothing should obstruct the back.</li>
-    <li>Stand far enough from the camera to see the entire back.</li>
+    <u>Photograph Submission Instructions</u>:
+    <ol style="margin-top:10px;">
+        <li><b>Clothing:</b> Ensure the back is completely bare. Avoid any clothing, hair, or accessories that may cover or obscure the spine.</li>
+        <li><b>Distance:</b> Position the camera far enough to capture the full length of the back, from shoulders to hips, with some space around the body.</li>
+        <li><b>Posture:</b> Stand upright and face directly away from the camera. Keep your arms relaxed at your sides and maintain a natural stance.</li>
+        <li><b>Lighting:</b> Use even, bright lighting. Avoid shadows, backlighting, or uneven light that could hide parts of the back.</li>
+        <li><b>Camera Angle:</b> Keep the camera at shoulder or chest height and make sure it is level with the person’s back—do not tilt it up or down.</li>
+        <li><b>Background:</b> Use a plain, light-colored background such as a wall. Avoid patterns or clutter that could interfere with the image.</li>
     </ol>
     </div>
     """, unsafe_allow_html=True)
+
 
 camera_image = None
 if uploaded_file is None and not selected_test_image:
