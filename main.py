@@ -227,12 +227,12 @@ elif selected_test_image:
     image_pil = Image.open(os.path.join(test_image_folder, selected_test_image))
     display_results(image_pil)
 
-
 startup_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
 st.markdown(
     f"""
-    <div style='position: fixed; bottom: 10px; right: 15px; color: gray; font-size: 0.85em; z-index: 9999;'>
-         App last started: <code>{startup_time}</code>
+    <div style='position: fixed; bottom: 10px; left: 15px; color: gray; font-size: 0.85em; z-index: 9999;'>
+        App last started: {startup_time}
     </div>
     """,
     unsafe_allow_html=True
