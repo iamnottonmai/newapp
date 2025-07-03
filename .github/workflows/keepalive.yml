@@ -11,4 +11,4 @@ jobs:
     steps:
       - name: Curl Streamlit URL
         run: |
-          curl -L --fail https://scoliosisweb.online || echo "Ping failed"
+          curl -L --fail http://scoliosisweb.online || echo "Ping failed"
