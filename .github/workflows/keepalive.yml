@@ -2,13 +2,13 @@ name: Keep Streamlit App Alive
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # Every 30 minutes
-  workflow_dispatch:        # Allows you to trigger it manually
+    - cron: '*/5 * * * *'  # Run every 5 minutes (UTC time)
+  workflow_dispatch:        # Allow manual trigger too
 
 jobs:
-  ping:
+  keepalive:
     runs-on: ubuntu-latest
     steps:
-      - name: Curl Streamlit URL
+      - name: Ping Streamlit App
         run: |
           curl -L --fail http://scoliosisweb.online || echo "Ping failed"
