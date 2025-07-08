@@ -8,7 +8,7 @@ import os
 import gdown
 from html import escape
 import datetime
-from ultralytics.models.yolo.classify import ClassificationModel
+from ultralytics import YOLO
 from torch.serialization import add_safe_globals
 
 st.set_page_config(page_title="Scoliosis")
