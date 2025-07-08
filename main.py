@@ -35,7 +35,7 @@ def load_model():
         gdown.download(url, model_path, quiet=False)
 
     # Allow PyTorch to safely load YOLOv8 classification model
-    add_safe_globals({'ultralytics.models.yolo.classify.ClassificationModel': ClassificationModel})
+    # add_safe_globals({'ultralytics.models.yolo.classify.ClassificationModel': ClassificationModel})
 
     # Load model with map_location and safe globals
     model = torch.load(model_path, map_location=torch.device("cpu"))
