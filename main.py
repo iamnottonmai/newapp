@@ -9,7 +9,6 @@ import gdown
 from html import escape
 import datetime
 from ultralytics import YOLO
-from torch.serialization import add_safe_globals
 
 st.set_page_config(page_title="Scoliosis")
 
@@ -17,13 +16,13 @@ st.set_page_config(page_title="Scoliosis")
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai&display=swap');
-
     html, body, [class*="css"]  {
         font-family: 'Noto Sans Thai', sans-serif;
     }
     </style>
 """, unsafe_allow_html=True)
 
+# ✅ Load the YOLO model using Ultralytics API
 @st.cache_resource
 def load_model():
     model_path = "best.pt"
@@ -34,12 +33,8 @@ def load_model():
         url = f"https://drive.google.com/uc?id={file_id}"
         gdown.download(url, model_path, quiet=False)
 
-    # Allow PyTorch to safely load YOLOv8 classification model
-    # add_safe_globals({'ultralytics.models.yolo.classify.ClassificationModel': ClassificationModel})
-
-    # Load model with map_location and safe globals
-    model = torch.load(model_path, map_location=torch.device("cpu"))
-    model.eval()
+    # Load YOLOv8 model using the Ultralytics YOLO API directly
+    model = YOLO(model_path)  # Load YOLOv8 model directly
     return model
 
 # Initialize the model
@@ -210,30 +205,4 @@ def display_results(image_pil):
         label, conf = classify_image(image_pil)
 
     st.image(image_pil, use_container_width=True)
-    msg = f"ตรวจพบ Scoliosis ({conf*100:.1f}%)" if label == "scoliosis" else f"ไม่พบความผิดปกติ ({conf*100:.1f}%)"
-    escaped_text = escape(msg)
-
-    st.markdown(f"""
-        <div style="background-color:{'#ffcccc' if label=='scoliosis' else '#c8e6c9'}; 
-                    padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;">
-            {escaped_text}
-        </div>
-    """, unsafe_allow_html=True)
-
-if uploaded_file is not None:
-    image_pil = Image.open(uploaded_file)
-    display_results(image_pil)
-elif camera_image is not None:
-    image_pil = ImageOps.mirror(Image.open(camera_image))
-    display_results(image_pil)
-elif selected_test_image:
-    image_pil = Image.open(os.path.join(test_image_folder, selected_test_image))
-    display_results(image_pil)
-
-startup_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-st.markdown(f"""
-    <div style='position: fixed; bottom: 10px; left: 15px; color: gray; font-size: 0.85em; z-index: 9999;'>
-        แอปเริ่มต้นล่าสุดเมื่อ: {startup_time}
-    </div>
-""", unsafe_allow_html=True)
+    msg = f"ตรวจพบ Scoliosis ({conf*100:.1f}%)
