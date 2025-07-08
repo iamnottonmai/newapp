@@ -187,13 +187,14 @@ if show_example_images:
             st.image("IMG_1435_JPG_jpg.rf.7bf2e18e950b4245a10bda6dcc05036f.jpg", width=250)
 
 def classify_image(image_pil):
-    image_tensor = transform(image_pil.convert("RGB")).unsqueeze(0)
-    with torch.no_grad():
-        outputs = model(image_tensor)
-        probs = torch.nn.functional.softmax(outputs, dim=1)
-        confidence, pred = torch.max(probs, 1)
-        label = class_names[pred.item()]
-        return label, confidence.item()
+    # Perform inference using the YOLOv8 model
+    results = model(image_pil)  # This works with both image files and PIL images
+
+    # Access the prediction
+    pred = results[0].boxes.cls[0].item()  # Predicted class (0: normal, 1: scoliosis)
+    conf = results[0].boxes.conf[0].item()  # Confidence score
+    label = class_names[int(pred)]  # Map the prediction to the corresponding class
+    return label, conf
 
 def display_results(image_pil):
     with st.spinner("กำลังตรวจสอบภาพ..."):
