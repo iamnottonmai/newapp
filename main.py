@@ -108,40 +108,40 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
-st.markdown("<h2 style='color:black;'>Upload, Take, or Select a Sample Image</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='color:black;'>อัปโหลด ถ่ายภาพ หรือเลือกภาพตัวอย่าง</h2>", unsafe_allow_html=True)
 
 col_upload, col_test = st.columns([2, 1])
 
 with col_upload:
-    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+    uploaded_file = st.file_uploader("อัปโหลดภาพ", type=["jpg", "jpeg", "png"])
 
 with col_test:
-    st.markdown('<div class="blue-box"><b>Select a Sample Image</b>', unsafe_allow_html=True)
+    st.markdown('<div class="blue-box"><b>เลือกภาพตัวอย่าง</b>', unsafe_allow_html=True)
     test_image_folder = "test_images"
     test_image_files = sorted([f for f in os.listdir(test_image_folder) if f.lower().endswith(('png', 'jpg', 'jpeg'))])
 
     selected_test_image = st.selectbox(
-        "Select from sample images",
+        "เลือกจากภาพตัวอย่าง",
         [""] + test_image_files,
-        format_func=lambda x: "Select an image" if x == "" else x,
+        format_func=lambda x: "เลือกภาพ" if x == "" else x,
         label_visibility="collapsed"
     )
     st.markdown('</div>', unsafe_allow_html=True)
 
     if selected_test_image:
-        st.image(os.path.join(test_image_folder, selected_test_image), width=250, caption="Selected sample image")
+        st.image(os.path.join(test_image_folder, selected_test_image), width=250, caption="ภาพตัวอย่างที่เลือก")
 
 if not selected_test_image:
     st.markdown("""
     <div style='margin-top: -10px; margin-bottom: 20px; color: black; font-weight: bold;'>
-    <u>Photograph Submission Instructions</u>:
+    <u>คำแนะนำในการถ่ายภาพ</u>:
     <ol style="margin-top:10px;">
-        <li><b>Clothing:</b> Ensure the back is completely bare. Avoid any clothing, hair, or accessories that may cover or obscure the spine.</li>
-        <li><b>Distance:</b> Position the camera far enough to capture the full length of the back, from shoulders to hips, with some space around the body.</li>
-        <li><b>Posture:</b> Stand upright and face directly away from the camera. Keep your arms relaxed at your sides and maintain a natural stance.</li>
-        <li><b>Lighting:</b> Use even, bright lighting. Avoid shadows, backlighting, or uneven light that could hide parts of the back.</li>
-        <li><b>Camera Angle:</b> Keep the camera at shoulder or chest height and make sure it is level with the person’s back—do not tilt it up or down.</li>
-        <li><b>Background:</b> Use a plain, light-colored background such as a wall. Avoid patterns or clutter that could interfere with the image.</li>
+        <li><b>เสื้อผ้า:</b> ให้แน่ใจว่าหลังเปลือย ไม่มีเสื้อผ้า ผม หรือเครื่องประดับบดบังแนวกระดูกสันหลัง</li>
+        <li><b>ระยะห่าง:</b> ตั้งกล้องให้ไกลพอที่จะถ่ายได้ทั้งหลัง ตั้งแต่ไหล่ถึงสะโพก</li>
+        <li><b>ท่าทาง:</b> ยืนตรง หันหลังให้กล้อง วางแขนข้างลำตัวตามธรรมชาติ</li>
+        <li><b>แสงสว่าง:</b> ใช้แสงที่สว่างสม่ำเสมอ หลีกเลี่ยงเงาหรือแสงย้อน</li>
+        <li><b>มุมกล้อง:</b> ตั้งกล้องให้สูงประมาณไหล่ ไม่เอียงขึ้นหรือลง</li>
+        <li><b>พื้นหลัง:</b> ใช้พื้นหลังเรียบ สีอ่อน เช่น ผนังขาว</li>
     </ol>
     </div>
     """, unsafe_allow_html=True)
@@ -149,11 +149,11 @@ if not selected_test_image:
 
 camera_image = None
 if uploaded_file is None and not selected_test_image:
-    camera_image = st.camera_input("Take a picture")
+    camera_image = st.camera_input("ถ่ายภาพ")
 
 show_example_images = uploaded_file is None and not selected_test_image
 if show_example_images:
-    with st.expander("📸 Click to view example images"):
+    with st.expander("📸 คลิกเพื่อดูภาพตัวอย่าง"):
         col1, col2 = st.columns([1, 1])
         with col1:
             st.image("IMG_1436_JPG_jpg.rf.b5bdcd6762cd0ce96b33f81720ca160f.jpg", width=250)
@@ -185,26 +185,26 @@ def predict_and_draw(image_pil):
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
     result_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    result_text = "Scoliosis detected. Further evaluation and treatment may be needed." if detected_scoliosis else "No abnormalities detected"
+    result_text = "ตรวจพบ Scoliosis ควรได้รับการประเมินเพิ่มเติมจากแพทย์" if detected_scoliosis else "ไม่พบความผิดปกติ"
     return result_image, result_text
 
 def display_results(image_pil):
-    with st.spinner("Checking image..."):
+    with st.spinner("กำลังตรวจสอบภาพ..."):
         if not is_image_human_back(image_pil):
             st.markdown(f"""
                 <div style=\"background-color:#fff3cd; padding: 10px; border-radius: 5px; color: #856404; font-weight: bold; text-align:center;\">
-                    ❌ This image does not appear to be a bare human back. Please upload a proper back photo.
+                    ❌ ภาพนี้ไม่ใช่ภาพด้านหลังของมนุษย์ที่เปลือย กรุณาอัปโหลดภาพที่เหมาะสม
                 </div>
             """, unsafe_allow_html=True)
             return
 
-    with st.spinner("Analysing..."):
+    with st.spinner("กำลังวิเคราะห์..."):
         result_image, result_text = predict_and_draw(image_pil)
 
     st.image(result_image, use_container_width=True)
     escaped_text = escape(result_text)
 
-    if "Scoliosis detected" in result_text:
+    if "Scoliosis" in result_text:
         st.markdown(f"""
             <div style=\"background-color:#ffcccc; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;\">
                 {escaped_text}
@@ -232,7 +232,7 @@ startup_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 st.markdown(
     f"""
     <div style='position: fixed; bottom: 10px; left: 15px; color: gray; font-size: 0.85em; z-index: 9999;'>
-        App last started: {startup_time}
+        แอปเริ่มต้นล่าสุดเมื่อ: {startup_time}
     </div>
     """,
     unsafe_allow_html=True
