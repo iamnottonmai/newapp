@@ -121,31 +121,24 @@ st.markdown("""
 st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
 st.markdown("<h2 style='color:black;'>อัปโหลด ถ่ายภาพ หรือเลือกภาพตัวอย่าง</h2>", unsafe_allow_html=True)
 
+# ✅ Tighter layout
 col_upload, col_test = st.columns([1.5, 1])
 
 with col_upload:
     uploaded_file = st.file_uploader("อัปโหลดภาพ", type=["jpg", "jpeg", "png"])
 
 with col_test:
+    st.markdown('<div class="blue-box"><b>เลือกภาพตัวอย่าง</b>', unsafe_allow_html=True)
     test_image_folder = "test_images"
     test_image_files = sorted([f for f in os.listdir(test_image_folder) if f.lower().endswith(('png', 'jpg', 'jpeg'))])
 
-    with st.container():
-        st.markdown(
-            """
-            <div style="background-color: #e6f0ff; border: 2px dashed #4a90e2; padding: 20px; border-radius: 10px;">
-                <b>เลือกภาพตัวอย่าง</b>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-        selected_test_image = st.selectbox(
-            "",
-            [""] + test_image_files,
-            format_func=lambda x: "เลือกภาพ" if x == "" else x,
-            label_visibility="collapsed"
-        )
+    selected_test_image = st.selectbox(
+        "เลือกจากภาพตัวอย่าง",
+        [""] + test_image_files,
+        format_func=lambda x: "เลือกภาพ" if x == "" else x,
+        label_visibility="collapsed"
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
 
     if selected_test_image:
         st.image(os.path.join(test_image_folder, selected_test_image), width=250, caption="ภาพตัวอย่างที่เลือก")
