@@ -8,6 +8,8 @@ import os
 import gdown
 from html import escape
 import datetime
+from ultralytics.models.yolo.classify import ClassificationModel
+from torch.serialization import add_safe_globals
 
 st.set_page_config(page_title="Scoliosis")
 
@@ -22,17 +24,25 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ✅ Load classification model
 @st.cache_resource
 def load_model():
-    model_path = os.path.join(os.path.dirname(__file__), '..', 'best.pt')
+    model_path = "best.pt"
+    
+    # Download model from Google Drive if it doesn't exist
     if not os.path.exists(model_path):
         file_id = "1HGdlajuTx8ly0zc-rmYMd0ni4kHIoTv-"
-        gdown.download(f"https://drive.google.com/uc?id={file_id}", model_path, quiet=False)
+        url = f"https://drive.google.com/uc?id={file_id}"
+        gdown.download(url, model_path, quiet=False)
+
+    # Allow PyTorch to safely load YOLOv8 classification model
+    add_safe_globals({'ultralytics.models.yolo.classify.ClassificationModel': ClassificationModel})
+
+    # Load model with map_location and safe globals
     model = torch.load(model_path, map_location=torch.device("cpu"))
     model.eval()
     return model
 
+# Initialize the model
 model = load_model()
 
 # ✅ Load CLIP model for back validation
