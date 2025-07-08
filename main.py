@@ -119,9 +119,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
-st.markdown("<h2 style='color:black;'>อัปโหลด ถ่ายภาพ หรือเลือกภาพตัวอย่าง</h2>", unsafe_allow_html=True)
+st.markdown("<h2 style='color:black; text-align:center;'>อัปโหลด ถ่ายภาพ หรือเลือกภาพตัวอย่าง</h2>", unsafe_allow_html=True)
 
-col_upload, col_test = st.columns([2, 1])
+col_upload, col_test = st.columns([1, 1])  # Equal columns to remove space
 
 with col_upload:
     uploaded_file = st.file_uploader("อัปโหลดภาพ", type=["jpg", "jpeg", "png"])
@@ -144,9 +144,9 @@ with col_test:
 
 if not selected_test_image:
     st.markdown("""
-    <div style='margin-top: -10px; margin-bottom: 20px; color: black; font-weight: bold;'>
+    <div style='text-align: center; margin-top: -10px; margin-bottom: 20px; color: black; font-weight: bold;'>
     <u>คำแนะนำในการถ่ายภาพ</u>:
-    <ol style="margin-top:10px;">
+    <ol style="margin-top:10px; text-align: left; display: inline-block;">
         <li><b>เสื้อผ้า:</b> ให้แน่ใจว่าหลังเปลือย ไม่มีเสื้อผ้า ผม หรือเครื่องประดับบดบังแนวกระดูกสันหลัง</li>
         <li><b>ระยะห่าง:</b> ตั้งกล้องให้ไกลพอที่จะถ่ายได้ทั้งหลัง ตั้งแต่ไหล่ถึงสะโพก</li>
         <li><b>ท่าทาง:</b> ยืนตรง หันหลังให้กล้อง วางแขนข้างลำตัวตามธรรมชาติ</li>
@@ -156,7 +156,6 @@ if not selected_test_image:
     </ol>
     </div>
     """, unsafe_allow_html=True)
-
 
 camera_image = None
 if uploaded_file is None and not selected_test_image:
