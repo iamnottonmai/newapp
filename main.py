@@ -11,15 +11,70 @@ import open_clip
 from torchvision import transforms
 import datetime
 
-st.set_page_config(page_title="Scoliosis")
+# ✅ Wider layout
+st.set_page_config(page_title="Scoliosis Detection", layout="wide")
 
-# ✅ Apply Noto Sans Thai font globally
+# ✅ Updated CSS
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai&display=swap');
 
     html, body, [class*="css"]  {
         font-family: 'Noto Sans Thai', sans-serif;
+    }
+
+    .main {
+        max-width: 1200px;
+        padding: 2rem 3rem;
+        margin: auto;
+    }
+
+    .stApp {
+        background-color: white;
+        color: black;
+    }
+
+    h1 {
+        color: black;
+        font-weight: bold;
+        font-size: 48px;
+        text-align: left;
+        margin-bottom: 40px;
+    }
+
+    .stFileUploader, .blue-box {
+        background-color: #e6f0ff !important;
+        border: 2px dashed #4a90e2 !important;
+        padding: 20px !important;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .stFileUploader div:first-child {
+        color: black !important;
+        font-weight: bold;
+    }
+
+    .stSelectbox > div {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    label[for^="camera-input"] {
+        color: white !important;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    [data-testid="stCameraInput"] button {
+        background-color: #e6f0ff !important;
+        color: black !important;
+        font-weight: bold;
+    }
+
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -74,54 +129,11 @@ def is_image_human_back(image_pil):
 
     return top_label == "a photo of a bare human back" and top_score > 0.25
 
-# ✅ CSS Styling
-st.markdown("""
-    <style>
-        .stApp {
-            background-color: white;
-            color: black;
-            padding: 40px;
-        }
-
-        h1 {
-            color: black;
-            font-weight: bold;
-            font-size: 48px;
-            text-align: left;
-            margin-bottom: 40px;
-        }
-
-        .stFileUploader, .blue-box {
-            background-color: #e6f0ff !important;
-            border: 2px dashed #4a90e2 !important;
-            padding: 20px !important;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .stFileUploader div:first-child {
-            color: black !important;
-            font-weight: bold;
-        }
-
-        label[for^="camera-input"] {
-            color: white !important;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        [data-testid="stCameraInput"] button {
-            background-color: #e6f0ff !important;
-            color: black !important;
-            font-weight: bold;
-        }
-    </style>
-""", unsafe_allow_html=True)
-
 st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
 st.markdown("<h2 style='color:black;'>อัปโหลด ถ่ายภาพ หรือเลือกภาพตัวอย่าง</h2>", unsafe_allow_html=True)
 
-col_upload, col_test = st.columns([2, 1])
+# ✅ Tighter layout
+col_upload, col_test = st.columns([1.5, 1])
 
 with col_upload:
     uploaded_file = st.file_uploader("อัปโหลดภาพ", type=["jpg", "jpeg", "png"])
@@ -157,14 +169,13 @@ if not selected_test_image:
     </div>
     """, unsafe_allow_html=True)
 
-
 camera_image = None
 if uploaded_file is None and not selected_test_image:
     camera_image = st.camera_input("ถ่ายภาพ")
 
 show_example_images = uploaded_file is None and not selected_test_image
 if show_example_images:
-    with st.expander("📸 คลิกเพื่อดูภาพตัวอย่าง"):
+    with st.expander("คลิกเพื่อดูภาพตัวอย่าง"):
         col1, col2 = st.columns([1, 1])
         with col1:
             st.image("IMG_1436_JPG_jpg.rf.b5bdcd6762cd0ce96b33f81720ca160f.jpg", width=250)
@@ -203,8 +214,8 @@ def display_results(image_pil):
     with st.spinner("กำลังตรวจสอบภาพ..."):
         if not is_image_human_back(image_pil):
             st.markdown(f"""
-                <div style=\"background-color:#fff3cd; padding: 10px; border-radius: 5px; color: #856404; font-weight: bold; text-align:center;\">
-                    ❌ ภาพนี้ไม่ใช่ภาพด้านหลังของมนุษย์ที่เปลือย กรุณาอัปโหลดภาพที่เหมาะสม
+                <div style="background-color:#fff3cd; padding: 10px; border-radius: 5px; color: #856404; font-weight: bold; text-align:center;">
+                    ❌ ภาพนี้ไม่ใช่ภาพแผ่นหลังของมนุษย์ กรุณาอัปโหลดภาพที่เหมาะสม
                 </div>
             """, unsafe_allow_html=True)
             return
@@ -217,13 +228,13 @@ def display_results(image_pil):
 
     if "Scoliosis" in result_text:
         st.markdown(f"""
-            <div style=\"background-color:#ffcccc; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;\">
+            <div style="background-color:#ffcccc; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;">
                 {escaped_text}
             </div>
         """, unsafe_allow_html=True)
     else:
         st.markdown(f"""
-            <div style=\"background-color:#c8e6c9; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;\">
+            <div style="background-color:#c8e6c9; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;">
                 {escaped_text}
             </div>
         """, unsafe_allow_html=True)
