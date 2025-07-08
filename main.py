@@ -1,14 +1,12 @@
 import streamlit as st
 from PIL import Image, ImageOps
-from ultralytics import YOLO
 import numpy as np
-import cv2
-import os
-import gdown
-from html import escape
 import torch
 import open_clip
 from torchvision import transforms
+import os
+import gdown
+from html import escape
 import datetime
 
 st.set_page_config(page_title="Scoliosis")
@@ -24,16 +22,20 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# ✅ Load classification model
 @st.cache_resource
 def load_model():
     model_path = os.path.join(os.path.dirname(__file__), '..', 'best.pt')
     if not os.path.exists(model_path):
         file_id = "1HGdlajuTx8ly0zc-rmYMd0ni4kHIoTv-"
         gdown.download(f"https://drive.google.com/uc?id={file_id}", model_path, quiet=False)
-    return YOLO(model_path)
+    model = torch.load(model_path, map_location=torch.device("cpu"))
+    model.eval()
+    return model
 
 model = load_model()
 
+# ✅ Load CLIP model for back validation
 @st.cache_resource
 def load_clip_model():
     model, _, preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k')
@@ -42,21 +44,25 @@ def load_clip_model():
 
 clip_model, clip_preprocess, clip_tokenizer = load_clip_model()
 
+# ✅ Classification label mapping
+class_names = ["normal", "scoliosis"]
+
+# ✅ Transform for classifier
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize([0.5], [0.5])  # adjust if RGB vs grayscale
+])
+
+# ✅ Verify image is a bare human back
 def is_image_human_back(image_pil):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model, preprocess, tokenizer = clip_model.to(device), clip_preprocess, clip_tokenizer
 
     image = preprocess(image_pil).unsqueeze(0).to(device)
-
     texts = [
-        "a photo of a bare human back",
-        "a photo of a hand",
-        "a wall",
-        "a photo of a face",
-        "a random object",
-        "a tree",
-        "a close-up",
-        "a foot"
+        "a photo of a bare human back", "a photo of a hand", "a wall",
+        "a photo of a face", "a random object", "a tree", "a close-up", "a foot"
     ]
     text_tokens = tokenizer(texts).to(device)
 
@@ -121,7 +127,6 @@ st.markdown("""
 st.markdown("<h1>Scoliosis Detection</h1>", unsafe_allow_html=True)
 st.markdown("<h2 style='color:black;'>อัปโหลด ถ่ายภาพ หรือเลือกภาพตัวอย่าง</h2>", unsafe_allow_html=True)
 
-# ✅ Tighter layout
 col_upload, col_test = st.columns([1.5, 1])
 
 with col_upload:
@@ -171,38 +176,19 @@ if show_example_images:
         with col2:
             st.image("IMG_1435_JPG_jpg.rf.7bf2e18e950b4245a10bda6dcc05036f.jpg", width=250)
 
-def predict_and_draw(image_pil):
-    confidence_threshold = 0.4
-    image = np.array(image_pil)
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-    results = model(image)
-    result = results[0]
-    boxes = result.boxes if result.boxes is not None else []
-    detected_scoliosis = False
-
-    for box in boxes:
-        conf = float(box.conf[0])
-        if conf < confidence_threshold:
-            continue
-
-        cls_id = int(box.cls[0])
-        label = model.names[cls_id]
-        x1, y1, x2, y2 = map(int, box.xyxy[0])
-
-        if label == "scoliosis":
-            detected_scoliosis = True
-            cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.putText(image, f"{label} {conf:.2f}", (x1, y1 - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-
-    result_image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    result_text = "ตรวจพบ Scoliosis ควรได้รับการประเมินเพิ่มเติมจากแพทย์" if detected_scoliosis else "ไม่พบความผิดปกติ"
-    return result_image, result_text
+def classify_image(image_pil):
+    image_tensor = transform(image_pil.convert("RGB")).unsqueeze(0)
+    with torch.no_grad():
+        outputs = model(image_tensor)
+        probs = torch.nn.functional.softmax(outputs, dim=1)
+        confidence, pred = torch.max(probs, 1)
+        label = class_names[pred.item()]
+        return label, confidence.item()
 
 def display_results(image_pil):
     with st.spinner("กำลังตรวจสอบภาพ..."):
         if not is_image_human_back(image_pil):
-            st.markdown(f"""
+            st.markdown("""
                 <div style="background-color:#fff3cd; padding: 10px; border-radius: 5px; color: #856404; font-weight: bold; text-align:center;">
                     ❌ ภาพนี้ไม่ใช่ภาพแผ่นหลังของมนุษย์ กรุณาอัปโหลดภาพที่เหมาะสม
                 </div>
@@ -210,23 +196,18 @@ def display_results(image_pil):
             return
 
     with st.spinner("กำลังวิเคราะห์..."):
-        result_image, result_text = predict_and_draw(image_pil)
+        label, conf = classify_image(image_pil)
 
-    st.image(result_image, use_container_width=True)
-    escaped_text = escape(result_text)
+    st.image(image_pil, use_container_width=True)
+    msg = f"ตรวจพบ Scoliosis ({conf*100:.1f}%)" if label == "scoliosis" else f"ไม่พบความผิดปกติ ({conf*100:.1f}%)"
+    escaped_text = escape(msg)
 
-    if "Scoliosis" in result_text:
-        st.markdown(f"""
-            <div style="background-color:#ffcccc; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;">
-                {escaped_text}
-            </div>
-        """, unsafe_allow_html=True)
-    else:
-        st.markdown(f"""
-            <div style="background-color:#c8e6c9; padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;">
-                {escaped_text}
-            </div>
-        """, unsafe_allow_html=True)
+    st.markdown(f"""
+        <div style="background-color:{'#ffcccc' if label=='scoliosis' else '#c8e6c9'}; 
+                    padding: 10px; border-radius: 5px; color: black; font-weight: bold; text-align:center;">
+            {escaped_text}
+        </div>
+    """, unsafe_allow_html=True)
 
 if uploaded_file is not None:
     image_pil = Image.open(uploaded_file)
@@ -240,11 +221,8 @@ elif selected_test_image:
 
 startup_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-st.markdown(
-    f"""
+st.markdown(f"""
     <div style='position: fixed; bottom: 10px; left: 15px; color: gray; font-size: 0.85em; z-index: 9999;'>
         แอปเริ่มต้นล่าสุดเมื่อ: {startup_time}
     </div>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
