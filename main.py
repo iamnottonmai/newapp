@@ -13,6 +13,17 @@ import datetime
 
 st.set_page_config(page_title="Scoliosis")
 
+# ✅ Apply Noto Sans Thai font globally
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai&display=swap');
+
+    html, body, [class*="css"]  {
+        font-family: 'Noto Sans Thai', sans-serif;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 @st.cache_resource
 def load_model():
     model_path = os.path.join(os.path.dirname(__file__), '..', 'best.pt')
